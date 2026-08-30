@@ -23,7 +23,10 @@ pub async fn create(pool: &SqlitePool, title: &str, body: &str) -> CoreResult<No
     )
     .fetch_one(pool)
     .await
-    .map_err(|_| CoreError::Internal)?;
+    .map_err(|e| {
+        tracing::error!(error = %e, "failed to insert note");
+        CoreError::Internal
+    })?;
 
     Ok(Note {
         id: rec.id,
@@ -36,7 +39,10 @@ pub async fn list(pool: &SqlitePool) -> CoreResult<Vec<Note>> {
     let rows = sqlx::query!("SELECT id, title, body FROM notes ORDER BY id")
         .fetch_all(pool)
         .await
-        .map_err(|_| CoreError::Internal)?;
+        .map_err(|e| {
+            tracing::error!(error = %e, "failed to list notes");
+            CoreError::Internal
+        })?;
 
     Ok(rows
         .into_iter()
@@ -52,7 +58,10 @@ pub async fn delete(pool: &SqlitePool, id: i64) -> CoreResult<()> {
     let result = sqlx::query!("DELETE FROM notes WHERE id = ?1", id)
         .execute(pool)
         .await
-        .map_err(|_| CoreError::Internal)?;
+        .map_err(|e| {
+            tracing::error!(error = %e, "failed to delete note");
+            CoreError::Internal
+        })?;
 
     if result.rows_affected() == 0 {
         return Err(CoreError::NotFound(format!("note {id}")));

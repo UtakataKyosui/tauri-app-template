@@ -47,17 +47,7 @@ pub fn run() {
                 desktop::focus_main_window_from_app(app);
             }))
             .plugin(tauri_plugin_window_state::Builder::default().build())
-            .plugin(tauri_plugin_global_shortcut::Builder::new().build())
-            .plugin(tauri_plugin_autostart::init(
-                tauri_plugin_autostart::MacosLauncher::LaunchAgent,
-                None,
-            ))
             .plugin(tauri_plugin_updater::Builder::new().build());
-    }
-
-    #[cfg(mobile)]
-    {
-        app_builder = app_builder.plugin(tauri_plugin_biometric::init());
     }
 
     app_builder
@@ -68,16 +58,13 @@ pub fn run() {
             // setup は同期クロージャのため、接続とマイグレーション適用は block_on する。
             let app_handle = app.handle().clone();
             let pool = tauri::async_runtime::block_on(async move {
-                let data_dir = app_handle
-                    .path()
-                    .app_data_dir()
-                    .expect("could not resolve app data dir");
-                std::fs::create_dir_all(&data_dir).expect("failed to create app data dir");
+                let data_dir = app_handle.path().app_data_dir()?;
+                std::fs::create_dir_all(&data_dir)?;
                 let db_path = data_dir.join("app.sqlite");
-                app_core::db::connect_persistent(db_path.to_string_lossy().as_ref())
-                    .await
-                    .expect("failed to connect to database")
-            });
+                let pool =
+                    app_core::db::connect_persistent(db_path.to_string_lossy().as_ref()).await?;
+                Ok::<_, Box<dyn std::error::Error>>(pool)
+            })?;
             app.manage(pool);
 
             #[cfg(desktop)]

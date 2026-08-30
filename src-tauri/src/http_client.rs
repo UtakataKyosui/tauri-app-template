@@ -3,12 +3,11 @@
 
 use std::time::Duration;
 
-pub fn build_client() -> reqwest::Client {
+pub fn build_client() -> Result<reqwest::Client, reqwest::Error> {
     reqwest::Client::builder()
         .timeout(Duration::from_secs(10))
         .connect_timeout(Duration::from_secs(5))
         .build()
-        .expect("failed to build reqwest client")
 }
 
 /// GET リクエストをリトライ付きで実行するサンプル。実際の外部 API 連携を追加する際は
