@@ -196,6 +196,8 @@ function NotesDemo({ onError }: DemoSectionProps) {
   const { t } = useTranslation();
   const [notes, setNotes] = useState<Note[]>([]);
   const [title, setTitle] = useState("");
+  const [adding, setAdding] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -220,14 +222,18 @@ function NotesDemo({ onError }: DemoSectionProps) {
           placeholder={t("demo.notes.placeholder")}
         />
         <Button
+          disabled={adding}
           onClick={async () => {
             if (!title.trim()) return;
+            setAdding(true);
             try {
               await createNote(title, "");
               setTitle("");
               await refresh();
             } catch (e) {
               onError(String(e));
+            } finally {
+              setAdding(false);
             }
           }}
         >
@@ -240,13 +246,17 @@ function NotesDemo({ onError }: DemoSectionProps) {
             <span>{note.title}</span>
             <button
               type="button"
-              className="text-xs text-muted-foreground underline"
+              disabled={deletingId === note.id}
+              className="text-xs text-muted-foreground underline disabled:opacity-50"
               onClick={async () => {
+                setDeletingId(note.id);
                 try {
                   await deleteNote(note.id);
                   await refresh();
                 } catch (e) {
                   onError(String(e));
+                } finally {
+                  setDeletingId(null);
                 }
               }}
             >
@@ -263,6 +273,7 @@ function NotesDemo({ onError }: DemoSectionProps) {
 function UpdaterDemo({ onError }: DemoSectionProps) {
   const { t } = useTranslation();
   const [checking, setChecking] = useState(false);
+  const [installing, setInstalling] = useState(false);
   const [available, setAvailable] = useState<string | null>(null);
 
   return (
@@ -288,11 +299,15 @@ function UpdaterDemo({ onError }: DemoSectionProps) {
         </Button>
         {available && (
           <Button
+            disabled={installing}
             onClick={async () => {
+              setInstalling(true);
               try {
                 await installUpdate();
               } catch (e) {
                 onError(String(e));
+              } finally {
+                setInstalling(false);
               }
             }}
           >

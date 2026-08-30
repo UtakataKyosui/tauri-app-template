@@ -1,5 +1,9 @@
 {
   "nav": { "home": "ホーム", "settings": "設定", "demo": "デモ" },
+  "errorBoundary": {
+    "message": "予期しないエラーが発生しました: {{message}}",
+    "retry": "再試行"
+  },
   "home": {
     "title": "Tauri App Template",
     "nameInput": "名前",

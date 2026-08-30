@@ -22,7 +22,12 @@ function RootLayout() {
     <div className="flex min-h-screen flex-col">
       <nav className="hidden gap-4 border-b border-border px-4 py-3 pt-safe-top sm:flex">
         {NAV_ITEMS.map((item) => (
-          <Link key={item.to} to={item.to} className="text-sm font-medium [&.active]:text-primary">
+          <Link
+            key={item.to}
+            to={item.to}
+            activeOptions={item.to === "/" ? { exact: true } : undefined}
+            className="text-sm font-medium [&.active]:text-primary"
+          >
             {t(item.key)}
           </Link>
         ))}
@@ -35,6 +40,7 @@ function RootLayout() {
           <Link
             key={item.to}
             to={item.to}
+            activeOptions={item.to === "/" ? { exact: true } : undefined}
             className="flex-1 py-3 text-center text-sm font-medium [&.active]:text-primary"
           >
             {t(item.key)}

@@ -1,5 +1,9 @@
 {
   "nav": { "home": "Home", "settings": "Settings", "demo": "Demo" },
+  "errorBoundary": {
+    "message": "An unexpected error occurred: {{message}}",
+    "retry": "Retry"
+  },
   "home": {
     "title": "Tauri App Template",
     "nameInput": "Name",

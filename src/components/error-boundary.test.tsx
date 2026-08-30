@@ -1,3 +1,4 @@
+import i18n from "@/app/i18n";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
@@ -27,7 +28,9 @@ describe("ErrorBoundary", () => {
       </ErrorBoundary>,
     );
 
-    expect(screen.getByRole("alert")).toHaveTextContent("boom");
+    expect(screen.getByRole("alert")).toHaveTextContent(
+      i18n.t("errorBoundary.message", { message: "boom" }),
+    );
     consoleError.mockRestore();
   });
 
@@ -48,7 +51,7 @@ describe("ErrorBoundary", () => {
     );
 
     shouldThrow = false;
-    await user.click(screen.getByRole("button", { name: "再試行" }));
+    await user.click(screen.getByRole("button", { name: i18n.t("errorBoundary.retry") }));
 
     expect(screen.getByText("recovered")).toBeInTheDocument();
     consoleError.mockRestore();
