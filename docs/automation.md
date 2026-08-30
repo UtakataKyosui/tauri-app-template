@@ -67,3 +67,30 @@ Hooks の介入強度（警告 / ブロック）を見直すシグナルとし�
 4. **生成の向きは常に一方向にし、循環させない**
 
 全生成物は `pnpm generate` で一括更新できる（GEN-06）。個別コマンドは `package.json` の `scripts` を参照。
+
+## 6. CI（Phase 2, #11）
+
+`.github/workflows/ci.yml` で以下を実行する。
+
+- フロントの lint / typecheck / test（カバレッジ計測込み、QA-10）/ build
+- Rust（`crates/core`）の fmt / clippy / test — 軽量なので専用ジョブで高速に回す
+- デスクトップ 3 OS（Ubuntu/macOS/Windows）でのビルド（CI-02）。合わせて `pnpm generate:*` を
+  再実行し `git diff --exit-code` で生成物のずれを検出する（GEN-02）
+- Android 向けのクロスコンパイル確認（R-6 対策。CI-06 の本実装は Phase 5）
+- Rust のカバレッジ計測（`cargo-llvm-cov`、QA-10。閾値では失敗させない）
+
+CI は §9.5 の方針どおり「テストが落ちたこと」だけでブロックする。
+
+## 7. Copilot レビューの自動リクエスト（REV-04）
+
+GitHub の Copilot コードレビュー自動リクエストはリポジトリの Ruleset（Settings > Rules >
+Rulesets）で設定する機能で、リポジトリ設定側の操作が必要なため Git 管理下のファイルだけでは
+完結しない。`.github/rulesets/require-copilot-review.json` に設定内容を定義してあるので、
+リポジトリ管理者は以下の手順で適用する。
+
+1. GitHub の対象リポジトリ → Settings → Rules → Rulesets → New ruleset → Import a ruleset
+2. `.github/rulesets/require-copilot-review.json` を選択してインポート
+3. Enforcement status が `Active` になっていることを確認する
+
+`required_approving_review_count: 0` としているとおり、Copilot レビューは**マージ条件に含めない**
+（一次フィルタと位置づける。レビュー観点 §「Copilot に任せないもの」）。

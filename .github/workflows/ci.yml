@@ -1,0 +1,212 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # CI-01: lint / typecheck / test (frontend)
+  frontend:
+    name: Frontend (lint / typecheck / test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".node-version"
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Lint (Biome)
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      # QA-10: カバレッジを計測・可視化するが、閾値による失敗はさせない
+      - name: Test with coverage
+        run: pnpm test:coverage
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: coverage/
+          retention-days: 14
+
+      - name: Build (Vite)
+        run: pnpm build
+
+  # CI-01: rustfmt / clippy / test (crates/core は tauri 非依存なのでここでは
+  # webkit2gtk 等のシステム依存を入れず軽量に検証する)
+  rust-core:
+    name: Rust core (fmt / clippy / test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt,clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ". -> target"
+
+      - name: Format check
+        run: cargo fmt --all -- --check
+
+      - name: Clippy (crates/core)
+        run: cargo clippy -p app-core --all-targets -- -D warnings
+
+      - name: Test (crates/core)
+        run: cargo test -p app-core
+
+  # CI-02: デスクトップ 3 OS のマトリクスビルド。GEN-01/GEN-02: bindings/routes を
+  # 再生成し差分が無いことも合わせて検証する
+  rust-tauri:
+    name: Tauri app (${{ matrix.platform }})
+    needs: [frontend]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: "ubuntu-latest"
+          - platform: "macos-latest"
+          - platform: "windows-latest"
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux dependencies
+        if: matrix.platform == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev librsvg2-dev \
+            libsoup-3.0-dev libjavascriptcoregtk-4.1-dev libayatana-appindicator3-dev \
+            patchelf build-essential
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt,clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ". -> target"
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".node-version"
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+
+      # GEN-02: 全生成物について、再生成後の差分を検出する
+      - name: Regenerate bindings and routes, then check for drift
+        run: |
+          pnpm generate:bindings
+          pnpm generate:routes
+          pnpm generate:i18n-types
+          git diff --exit-code -- src/lib/bindings.ts src/routeTree.gen.ts src/locales/keys.gen.ts || \
+            (echo "::error::生成物に差分があります。'pnpm generate' を実行してコミットしてください" && exit 1)
+
+      - name: Clippy (src-tauri, all targets)
+        run: cargo clippy -p tauri-app-template --all-targets -- -D warnings
+
+      - name: Test (src-tauri command layer)
+        run: cargo test -p tauri-app-template --lib
+
+      - name: Build frontend
+        run: pnpm build
+
+      - name: Tauri build (debug, no bundle signing)
+        run: cargo tauri build --debug --no-bundle
+        env:
+          CI: true
+
+  # R-6 対策: デスクトップ専用プラグインが増えてもモバイルビルドが壊れないことを
+  # 早期に検出する。実機ビルドではなくクロスコンパイルの成否のみを見る
+  mobile-compile-check:
+    name: Mobile compile check (Android)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev librsvg2-dev \
+            libsoup-3.0-dev libjavascriptcoregtk-4.1-dev libayatana-appindicator3-dev \
+            patchelf build-essential
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ". -> target"
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".node-version"
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Setup Android NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: r27c
+
+      - name: cargo tauri android init
+        run: pnpm tauri android init
+        env:
+          NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+
+      - name: Android build (debug APK)
+        run: pnpm tauri android build --debug --target aarch64
+        env:
+          NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
+
+  # QA-10: Rust 側のカバレッジも可視化する（閾値では失敗させない）
+  rust-coverage:
+    name: Rust coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+      - uses: taiki-e/install-action@cargo-llvm-cov
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ". -> target"
+      - name: Generate coverage (crates/core)
+        run: cargo llvm-cov -p app-core --lcov --output-path lcov.info
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rust-coverage
+          path: lcov.info
+          retention-days: 14
