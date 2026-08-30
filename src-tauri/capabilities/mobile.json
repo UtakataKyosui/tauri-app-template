@@ -1,0 +1,15 @@
+{
+  "$schema": "../gen/schemas/mobile-schema.json",
+  "identifier": "mobile",
+  "description": "モバイル専用機能（生体認証、ディープリンク）。platforms で iOS/Android に限定する。",
+  "platforms": ["iOS", "android"],
+  "windows": ["main"],
+  "permissions": [
+    "dialog:default",
+    "fs:default",
+    "notification:default",
+    "opener:default",
+    "os:default",
+    "biometric:default"
+  ]
+}

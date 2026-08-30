@@ -54,7 +54,7 @@ e2e/                      # WebDriver ベースの E2E（TDD サイクル外）
 1 サイクルの待ち時間が長いと TDD は破綻する。
 
 - フロントのユニットテストはウォッチモード（`pnpm test:watch`）で即時に再実行される
-- Rust のテストは `cargo watch -x 'test -p core'` 等で自動再実行できる。`crates/core` は tauri に依存しないためビルドが軽い
+- Rust のテストは `cargo watch -x 'test -p app-core'` 等で自動再実行できる。`crates/core` は tauri に依存しないためビルドが軽い
 - **アプリの起動を伴うテストはサイクルに入れない** — E2E とネイティブ機能の確認は PR 前・CI 側に置く
 
 ## 7. CI との関係

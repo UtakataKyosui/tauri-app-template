@@ -1,0 +1,14 @@
+{
+  "nav": { "home": "ホーム", "settings": "設定" },
+  "home": {
+    "title": "Tauri App Template",
+    "nameInput": "名前",
+    "greet": "挨拶する",
+    "loading": "送信中..."
+  },
+  "settings": {
+    "title": "設定",
+    "theme": "テーマ",
+    "themes": { "light": "ライト", "dark": "ダーク", "system": "OS に合わせる" }
+  }
+}

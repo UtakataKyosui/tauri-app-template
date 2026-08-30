@@ -1,0 +1,14 @@
+{
+  "nav": { "home": "Home", "settings": "Settings" },
+  "home": {
+    "title": "Tauri App Template",
+    "nameInput": "Name",
+    "greet": "Greet",
+    "loading": "Sending..."
+  },
+  "settings": {
+    "title": "Settings",
+    "theme": "Theme",
+    "themes": { "light": "Light", "dark": "Dark", "system": "Follow OS" }
+  }
+}

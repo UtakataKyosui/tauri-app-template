@@ -20,9 +20,9 @@ Git hooks と必ず対で用意する。どちらか一方では穴が残る（�
 
 以下を実装する。
 
-- **PostToolUse (Edit/Write on `crates/core/src/**/*.rs`)** — 編集直後に `cargo test -p core` を実行し、結果をエージェントに返す（QA-16）
+- **PostToolUse (Edit/Write on `crates/core/src/**/*.rs`)** — 編集直後に `cargo test -p app-core` を実行し、結果をエージェントに返す（QA-16）
 - **PreToolUse (Write on 新規 `*.rs` / `*.ts(x)`)** — 対応するテストファイルが存在しない実装ファイルの新規作成を検知したら警告する（QA-17）。**まず警告として運用し、無視される実績が出てからブロックへ引き上げることを推奨する**（未決事項 6、requirements.md §7）
-- **Stop** — 応答を終える前に高速テスト一式（`pnpm test -- --run` と `cargo test -p core`）を実行し、失敗していれば知らせる（QA-18）
+- **Stop** — 応答を終える前に高速テスト一式（`pnpm test -- --run` と `cargo test -p app-core`）を実行し、失敗していれば知らせる（QA-18）
 
 Hooks の設定はリポジトリにコミットし、テンプレート利用者にも同じ強制がかかるようにする（QA-20）。
 
@@ -31,7 +31,7 @@ Hooks の設定はリポジトリにコミットし、テンプレート利用�
 `lefthook.yml` に以下を定義する。
 
 - `pre-commit`: 変更ファイルに対する Biome の format/lint、rustfmt
-- `pre-push`: 変更範囲に対応するテスト（フロント: 変更 workspace の vitest、Rust: `cargo test -p core` および変更のあった crate）
+- `pre-push`: 変更範囲に対応するテスト（フロント: 変更 workspace の vitest、Rust: `cargo test -p app-core` および変更のあった crate）
 
 ## 4. 一時的な無効化手順（QA-21）
 
