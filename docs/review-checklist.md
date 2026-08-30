@@ -15,6 +15,9 @@ Copilot 向け指示（`.github/copilot-instructions.md`、`.github/instructions
 - [ ] フロントから受け取った値を、検証せずファイルパスやシェル引数に渡していないか
 - [ ] 機密情報（トークン・鍵・パスワード）がフロントに返っていないか、ログに出ていないか
 - [ ] CSP を緩めていないか。`tauri.conf.json` の `app.withGlobalTauri` を有効化していないか
+  （既定の CSP は `style-src 'self' 'unsafe-inline'` — Tailwind/shadcn ui コンポーネントが
+  生成するインラインスタイルのために必要な最小限の許可であり、`script-src` には
+  `unsafe-inline`/`unsafe-eval` を含めていない。これ以上緩めていないか確認する）
 - [ ] 外部から受け取った URL・パスの検証があるか（ディープリンク・ファイルパス）
 
 ## 2. Rust
