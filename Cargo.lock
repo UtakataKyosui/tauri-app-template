@@ -4819,6 +4819,7 @@ name = "tauri-app-template"
 version = "0.1.0"
 dependencies = [
  "app-core",
+ "embed-resource",
  "keyring",
  "log",
  "reqwest 0.12.28",

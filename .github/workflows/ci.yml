@@ -145,18 +145,6 @@ jobs:
             libsoup-3.0-dev libjavascriptcoregtk-4.1-dev libayatana-appindicator3-dev \
             patchelf build-essential
 
-      # windows-latest だけ再現する STATUS_ENTRYPOINT_NOT_FOUND (0xC0000139) 対策。
-      # Windows Defender のリアルタイムスキャンがビルド直後の実行ファイルを読み込み中に
-      # 割り込み、ロード時に不完全な PE イメージを掴んでしまう既知のクラスの GitHub
-      # Actions Windows ランナー障害への定番の緩和策（ビルド成果物のディレクトリを
-      # スキャン対象から除外する）。
-      - name: Exclude build directories from Windows Defender
-        if: matrix.platform == 'windows-latest'
-        shell: pwsh
-        run: |
-          Add-MpPreference -ExclusionPath "${{ github.workspace }}\target"
-          Add-MpPreference -ExclusionPath "$env:USERPROFILE\.cargo"
-
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt,clippy

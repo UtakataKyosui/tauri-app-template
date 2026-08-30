@@ -13,6 +13,10 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
+# Windows のみで使う（build.rs 参照）。tauri-build 自体が使っている embed-resource と
+# 同じクレートを直接呼び、`cargo test` バイナリにも Common Controls v6 マニフェストを
+# 埋め込む（tauri-build は `[[bin]]` のみにしか埋め込まないため。GH issue #13419）。
+embed-resource = "3"
 
 [dependencies]
 app-core = { path = "../crates/core" }
