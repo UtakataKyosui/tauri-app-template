@@ -49,6 +49,9 @@
     ]
   },
   "plugins": {
+    "deep-link": {
+      "schemes": ["tauri-app-template"]
+    },
     "updater": {
       "active": true,
       "endpoints": [

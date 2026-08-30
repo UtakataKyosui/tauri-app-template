@@ -110,3 +110,20 @@ app_core::CoreError  →  src-tauri::AppError (#[from])  →  serde  →  フロ
 | バージョン・CHANGELOG（CI-08） | `.github/workflows/release-please.yml`, `release-please-config.json` | Conventional Commits（QA-12）からリリース PR を自動生成する |
 
 証明書・署名鍵の準備手順は `docs/recipes/signing.md` を参照。
+
+## 10. Phase 5 で追加したモバイル対応（#22）
+
+| 機能 | 正本 | 備考 |
+|---|---|---|
+| レスポンシブ設計（FE-07） | `src/routes/__root.tsx` | `sm`（640px）を境に上部ナビ／下部タブバーを切り替える。`pb-safe-bottom` 等でセーフエリアに対応 |
+| ディープリンク（APP-09） | `tauri_plugin_deep_link`（`lib.rs`）, `src/hooks/use-deep-link.ts` | カスタム URL スキームは `tauri.conf.json` の `plugins."deep-link".schemes` が正本。両プラットフォーム対応 |
+| Android ビルド（CI-06） | `.github/workflows/release.yml` の `android` ジョブ | 署名鍵が無くてもデバッグ署名 APK の生成までは失敗しない。ストア配信はスコープ外（`docs/requirements.md` §7 未決事項 5） |
+| iOS ビルド（CI-07, P2） | — | 初版では見送り。手順は `docs/recipes/signing.md` §5 に記載（リスク R-4） |
+
+## 11. プラットフォーム別に意味を持たない機能の出し分け（レビュー観点 §3）
+
+- `src/lib/platform.ts` の `isDesktop()` / `isMobile()` で UI を出し分ける
+  （例: `src/routes/demo.tsx` の自動アップデートセクションは `isDesktop()` の場合のみ表示）
+- Rust 側は `src-tauri/src/specta_bindings.rs` が `#[cfg(desktop)]` / `#[cfg(mobile)]` で
+  別々の `typed_builder()` を持ち、デスクトップ専用コマンド（`updater`）はモバイル向け
+  バイナリに含まれない

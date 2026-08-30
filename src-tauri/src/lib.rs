@@ -28,6 +28,9 @@ pub fn run() {
     let mut app_builder = tauri::Builder::default()
         .plugin(logging::plugin())
         .plugin(tauri_plugin_store::Builder::new().build())
+        // APP-09: ディープリンク（カスタム URL スキーム）。両プラットフォーム対応。
+        // スキームは tauri.conf.json の plugins."deep-link".schemes で定義する。
+        .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_notification::init())
