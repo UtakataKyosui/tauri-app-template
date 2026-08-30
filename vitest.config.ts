@@ -26,7 +26,13 @@ export default defineConfig({
         "src/components/ui/**",
         "src/test/**",
       ],
-      // QA-15: 閾値は既定で無効。派生プロジェクト側で thresholds を有効化する
+      // QA-15: 閾値は既定で無効（テンプレート段階では形骸化しやすいため）。
+      // 派生プロジェクト側で `COVERAGE_THRESHOLDS=true pnpm test:coverage` のように
+      // 有効化できる。数値は導入時の実測値に合わせて調整すること。
+      thresholds:
+        process.env.COVERAGE_THRESHOLDS === "true"
+          ? { lines: 80, functions: 80, branches: 70, statements: 80 }
+          : undefined,
     },
   },
 });

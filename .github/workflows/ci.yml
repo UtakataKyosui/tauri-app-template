@@ -84,6 +84,36 @@ jobs:
       - name: Test (crates/core)
         run: cargo test -p app-core
 
+  # GEN-09: スキャフォールドの雛形自体をテストする。生成された core 側のテストが
+  # 意図通り Red（失敗）になることを確認し、コミットはしない。
+  scaffold-smoke-test:
+    name: Scaffold generator smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ". -> target"
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".node-version"
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+
+      - name: Generate a throwaway feature
+        run: pnpm scaffold:feature ci-smoke-test
+
+      - name: New core test must fail until implemented (Red)
+        run: |
+          set -o pipefail
+          if cargo test -p app-core ci_smoke_test 2>&1 | tee /tmp/scaffold-test.log; then
+            echo "::error::scaffolded test unexpectedly passed; the generator should start Red"
+            exit 1
+          fi
+          grep -q "not yet implemented" /tmp/scaffold-test.log
+
   # CI-02: デスクトップ 3 OS のマトリクスビルド。GEN-01/GEN-02: bindings/routes を
   # 再生成し差分が無いことも合わせて検証する
   rust-tauri:
@@ -228,3 +258,26 @@ jobs:
           name: rust-coverage
           path: lcov.info
           retention-days: 14
+
+  # CI-10: 脆弱性スキャン。マージ条件には含めず、可視化のみ（QA-10 と同じ配分方針）。
+  security-audit:
+    name: Vulnerability scan
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".node-version"
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+
+      - name: pnpm audit
+        run: pnpm audit --prod
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@cargo-audit
+      - name: cargo audit
+        run: cargo audit

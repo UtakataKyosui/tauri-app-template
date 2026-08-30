@@ -18,7 +18,8 @@
 
 ## 禁止事項
 
-- `src/lib/bindings.ts`、lockfile（`pnpm-lock.yaml`、`Cargo.lock`）、`src/components/ui/**` の手編集
+- `src/lib/bindings.ts`、`src/routeTree.gen.ts`、`src/locales/keys.gen.ts`、
+  lockfile（`pnpm-lock.yaml`、`Cargo.lock`）、`src/components/ui/**` の手編集
 - コマンド関数（`#[tauri::command]`）へのビジネスロジックの直書き。ロジックは `crates/core` に置く
 - コマンド経路での `unwrap()` / `expect()` / `panic!`
 - `capabilities/**` への必要最小限を超える権限追加
@@ -37,7 +38,13 @@
 
 ## レビュー対象外
 
-- `src/lib/bindings.ts`
+- `src/lib/bindings.ts`、`src/routeTree.gen.ts`、`src/locales/keys.gen.ts`
 - `src/components/ui/**`
 - `pnpm-lock.yaml`, `Cargo.lock`
 - `crates/core/.sqlx/**`（sqlx オフラインクエリメタデータ）
+
+## 参照
+
+- パス別の詳細指示: `.github/instructions/*.instructions.md`（REV-03）
+- PR の自己チェック項目: `.github/pull_request_template.md`（REV-06）
+- AI エージェント向けの同一観点: `CLAUDE.md`（REV-07）

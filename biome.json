@@ -6,6 +6,7 @@
     "ignore": [
       "src/lib/bindings.ts",
       "src/routeTree.gen.ts",
+      "src/locales/keys.gen.ts",
       "src/components/ui/**",
       "src-tauri/target/**",
       "src-tauri/gen/**",
@@ -33,7 +34,12 @@
   },
   "overrides": [
     {
-      "include": ["src/lib/bindings.ts", "src/routeTree.gen.ts", "src/components/ui/**"],
+      "include": [
+        "src/lib/bindings.ts",
+        "src/routeTree.gen.ts",
+        "src/locales/keys.gen.ts",
+        "src/components/ui/**"
+      ],
       "linter": { "enabled": false },
       "formatter": { "enabled": false }
     }
