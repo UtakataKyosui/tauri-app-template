@@ -7,7 +7,7 @@ cd "$(dirname "$0")/../.."
 failures=""
 
 if [ -f package.json ] && [ -d node_modules ]; then
-  if ! pnpm test -- --run >/tmp/stop-hook-frontend-test.log 2>&1; then
+  if ! pnpm exec vitest run >/tmp/stop-hook-frontend-test.log 2>&1; then
     failures="${failures}\n--- pnpm test (frontend) ---\n$(tail -40 /tmp/stop-hook-frontend-test.log)"
   fi
 fi

@@ -9,6 +9,9 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: release-${{ github.ref }}
+
 jobs:
   release:
     strategy:
@@ -22,6 +25,7 @@ jobs:
           - platform: "windows-latest"
             args: ""
     runs-on: ${{ matrix.platform }}
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
@@ -86,6 +90,7 @@ jobs:
   # デバッグ署名の APK を生成するだけに留める（R-3 と同じ考え方）。
   android:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     env:
       ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
     steps:
@@ -100,7 +105,9 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
         with:
-          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+          # `pnpm tauri android build` は --target aarch64 のみをビルドするため、
+          # 他 ABI のツールチェインは未使用（CI 時間短縮）。
+          targets: aarch64-linux-android
 
       - uses: Swatinem/rust-cache@v2
         with:
@@ -153,4 +160,5 @@ jobs:
         with:
           tag_name: ${{ github.ref_name }}
           draft: true
+          fail_on_unmatched_files: true
           files: src-tauri/gen/android/app/build/outputs/apk/**/*.apk

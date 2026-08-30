@@ -11,9 +11,13 @@ permissions:
   contents: write
   pull-requests: write
 
+concurrency:
+  group: release-please-${{ github.ref }}
+
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: googleapis/release-please-action@v4
         with:

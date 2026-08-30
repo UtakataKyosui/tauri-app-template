@@ -21,12 +21,13 @@ case "$file_path" in
     base="${file_path%.rs}"
     name="$(basename "$base")"
     dir="$(dirname "$file_path")"
-    if ! find "$(dirname "$dir")" -name "${name}*" -path "*tests*" 2>/dev/null | grep -q . && \
+    crate_root="${file_path%/src/*}"
+    if ! find "$(dirname "$dir")" "$crate_root/tests" -name "${name}*" -path "*tests*" 2>/dev/null | grep -q . && \
        ! grep -rq "mod tests" "$file_path" 2>/dev/null; then
       reason="警告(QA-17): ${file_path} に対応するテストが見当たりません。crates/core は TDD 必須層です（docs/testing.md §2）。#[cfg(test)] mod tests を同ファイルに書くか、crates/core/tests/ に統合テストを追加してから実装することを推奨します。"
     fi
     ;;
-  src/*.ts|src/*.tsx)
+  *src/*.ts|*src/*.tsx)
     case "$file_path" in
       */routes/*|*/app/*|*/components/ui/*|*/lib/bindings.ts|*/*.gen.ts)
         exit 0 ;; # ルート結線・生成物・shadcn コピーはテスト対象外（docs/testing.md §2）

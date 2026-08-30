@@ -9,6 +9,9 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 env:
   CARGO_TERM_COLOR: always
   # RS-09 / リスク R-1: sqlx のコンパイル時 SQL 検証はここでは常にオフラインメタデータ
@@ -20,6 +23,7 @@ jobs:
   frontend:
     name: Frontend (lint / typecheck / test)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -64,6 +68,7 @@ jobs:
   rust-core:
     name: Rust core (fmt / clippy / test)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -89,6 +94,7 @@ jobs:
   scaffold-smoke-test:
     name: Scaffold generator smoke test
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -127,6 +133,7 @@ jobs:
           - platform: "macos-latest"
           - platform: "windows-latest"
     runs-on: ${{ matrix.platform }}
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
 
@@ -137,6 +144,18 @@ jobs:
           sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev librsvg2-dev \
             libsoup-3.0-dev libjavascriptcoregtk-4.1-dev libayatana-appindicator3-dev \
             patchelf build-essential
+
+      # windows-latest だけ再現する STATUS_ENTRYPOINT_NOT_FOUND (0xC0000139) 対策。
+      # Windows Defender のリアルタイムスキャンがビルド直後の実行ファイルを読み込み中に
+      # 割り込み、ロード時に不完全な PE イメージを掴んでしまう既知のクラスの GitHub
+      # Actions Windows ランナー障害への定番の緩和策（ビルド成果物のディレクトリを
+      # スキャン対象から除外する）。
+      - name: Exclude build directories from Windows Defender
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "${{ github.workspace }}\target"
+          Add-MpPreference -ExclusionPath "$env:USERPROFILE\.cargo"
 
       - uses: dtolnay/rust-toolchain@stable
         with:
@@ -176,9 +195,8 @@ jobs:
       - name: Test (src-tauri command layer)
         run: cargo test -p tauri-app-template --lib
 
-      - name: Build frontend
-        run: pnpm build
-
+      # `beforeBuildCommand` (tauri.conf.json) が `pnpm build` を実行するため、
+      # ここで個別にフロントを事前ビルドする必要はない（二重ビルド防止）。
       - name: Tauri build (debug, no bundle signing)
         run: pnpm tauri build --debug --no-bundle
         env:
@@ -189,6 +207,7 @@ jobs:
   mobile-compile-check:
     name: Mobile compile check (Android)
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -242,6 +261,7 @@ jobs:
   rust-coverage:
     name: Rust coverage
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -263,6 +283,7 @@ jobs:
   security-audit:
     name: Vulnerability scan
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4

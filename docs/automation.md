@@ -22,7 +22,7 @@ Git hooks と必ず対で用意する。どちらか一方では穴が残る（�
 
 - **PostToolUse (Edit/Write on `crates/core/src/**/*.rs`)** — 編集直後に `cargo test -p app-core` を実行し、結果をエージェントに返す（QA-16）
 - **PreToolUse (Write on 新規 `*.rs` / `*.ts(x)`)** — 対応するテストファイルが存在しない実装ファイルの新規作成を検知したら警告する（QA-17）。**まず警告として運用し、無視される実績が出てからブロックへ引き上げることを推奨する**（未決事項 6、requirements.md §7）
-- **Stop** — 応答を終える前に高速テスト一式（`pnpm test -- --run` と `cargo test -p app-core`）を実行し、失敗していれば知らせる（QA-18）
+- **Stop** — 応答を終える前に高速テスト一式（`pnpm exec vitest run` と `cargo test -p app-core`）を実行し、失敗していれば知らせる（QA-18）
 
 Hooks の設定はリポジトリにコミットし、テンプレート利用者にも同じ強制がかかるようにする（QA-20）。
 
