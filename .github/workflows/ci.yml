@@ -180,8 +180,12 @@ jobs:
       - name: Clippy (src-tauri, all targets)
         run: cargo clippy -p tauri-app-template --all-targets -- -D warnings
 
+      # windows-latest だけ、build.rs で Common Controls v6 マニフェストをテストバイナリに
+      # 埋め込む（src-tauri/build.rs 参照）。他 OS では無視される。
       - name: Test (src-tauri command layer)
         run: cargo test -p tauri-app-template --lib
+        env:
+          TAURI_APP_TEMPLATE_EMBED_TEST_MANIFEST: "1"
 
       # `beforeBuildCommand` (tauri.conf.json) が `pnpm build` を実行するため、
       # ここで個別にフロントを事前ビルドする必要はない（二重ビルド防止）。
