@@ -47,3 +47,6 @@ coverage/
 *.log
 npm-debug.log*
 pnpm-debug.log*
+
+# Claude Code agent worktrees (transient tooling state, not repo content)
+.claude/worktrees/
