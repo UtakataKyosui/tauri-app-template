@@ -32,6 +32,12 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      # routeTree.gen.ts / keys.gen.ts は生成物のため gitignore 対象（GEN-03）。
+      # bindings.ts は Rust ビルドが要るためコミット済みだが、この2つは軽量なので
+      # 各ジョブで都度生成する（lint/typecheck/build がこれらの型に依存するため）。
+      - name: Generate routes and i18n types
+        run: pnpm generate:routes && pnpm generate:i18n-types
+
       - name: Lint (Biome)
         run: pnpm lint
 
@@ -171,6 +177,9 @@ jobs:
           node-version-file: ".node-version"
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
+
+      - name: Generate routes and i18n types
+        run: pnpm generate:routes && pnpm generate:i18n-types
 
       - uses: actions/setup-java@v4
         with:
