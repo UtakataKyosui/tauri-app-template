@@ -11,6 +11,9 @@ concurrency:
 
 env:
   CARGO_TERM_COLOR: always
+  # RS-09 / リスク R-1: sqlx のコンパイル時 SQL 検証はここでは常にオフラインメタデータ
+  # （crates/core/.sqlx/, コミット済み）を使う。ビルド時に DB を用意する必要はない。
+  SQLX_OFFLINE: true
 
 jobs:
   # CI-01: lint / typecheck / test (frontend)

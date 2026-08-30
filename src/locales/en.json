@@ -1,5 +1,5 @@
 {
-  "nav": { "home": "Home", "settings": "Settings" },
+  "nav": { "home": "Home", "settings": "Settings", "demo": "Demo" },
   "home": {
     "title": "Tauri App Template",
     "nameInput": "Name",
@@ -9,6 +9,25 @@
   "settings": {
     "title": "Settings",
     "theme": "Theme",
-    "themes": { "light": "Light", "dark": "Dark", "system": "Follow OS" }
+    "themes": { "light": "Light", "dark": "Dark", "system": "Follow OS" },
+    "language": "Language"
+  },
+  "demo": {
+    "title": "Feature demo",
+    "file": { "title": "File picker / read", "open": "Open a file" },
+    "notification": {
+      "title": "Native notification",
+      "send": "Send notification",
+      "body": "This is a test notification",
+      "denied": "Notification permission was not granted"
+    },
+    "openLink": { "title": "External link", "open": "Open in browser" },
+    "longTask": { "title": "Async task with progress", "start": "Start", "cancel": "Cancel" },
+    "notes": {
+      "title": "Notes (SQLite persistence)",
+      "placeholder": "Title",
+      "add": "Add",
+      "delete": "Delete"
+    }
   }
 }

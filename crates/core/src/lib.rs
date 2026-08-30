@@ -6,5 +6,6 @@
 pub mod db;
 pub mod domain;
 pub mod error;
+pub mod net;
 
 pub use error::CoreError;

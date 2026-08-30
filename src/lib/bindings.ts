@@ -19,12 +19,109 @@ async greet(name: string) : Promise<Result<string, AppError>> {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+/**
+ * フロントから渡された秘密情報を OS キーチェーンに保存する。保存後は破棄され、
+ * 二度とフロントへは返らない（SEC-04, RS-12）。
+ */
+async saveCredential(account: string, secret: string) : Promise<Result<null, AppError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("save_credential", { account, secret }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * 値そのものではなく「保存されているか」だけをフロントに返す。
+ */
+async hasCredential(account: string) : Promise<Result<boolean, AppError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("has_credential", { account }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async deleteCredential(account: string) : Promise<Result<null, AppError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("delete_credential", { account }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * RS-10: 進捗イベントを伴う長時間処理のサンプル。即座にタスク ID を返し、
+ * 実処理はバックグラウンドで進める。フロントは `TaskProgress` イベントを購読して
+ * 進捗バーを更新し、`cancel_long_task` でキャンセルできる。
+ */
+async startLongTask(steps: number) : Promise<Result<string, AppError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("start_long_task", { steps }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async cancelLongTask(taskId: string) : Promise<Result<null, AppError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("cancel_long_task", { taskId }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * RS-09 のサンプルコマンド。SQL 組み立てとコンパイル時検証は `app_core::domain::notes` 側
+ * （`sqlx::query!`）に閉じ、ここでは呼び出しと State からの取得のみを行う。
+ */
+async createNote(title: string, body: string) : Promise<Result<Note, AppError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("create_note", { title, body }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async listNotes() : Promise<Result<Note[], AppError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("list_notes") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+async deleteNote(id: number) : Promise<Result<null, AppError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("delete_note", { id }) };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * FE-06: フロントの初期化が完了したらメイン画面から呼び出す。スプラッシュを閉じて
+ * メインウィンドウを表示する。デスクトップ・モバイル双方の window 構成で動作する。
+ */
+async closeSplashscreen() : Promise<Result<null, AppError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("close_splashscreen") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
 /** user-defined events **/
 
 
+export const events = __makeEvents__<{
+taskProgress: TaskProgress
+}>({
+taskProgress: "task-progress"
+})
 
 /** user-defined constants **/
 
@@ -45,6 +142,9 @@ export type AppError = { kind: "Core"; message: CoreError } | { kind: "Io"; mess
  * 変換されるもの）を返す。`src-tauri` のコマンド層はこれを `serde` でフロントへシリアライズする。
  */
 export type CoreError = { kind: "InvalidInput"; message: string } | { kind: "NotFound"; message: string } | { kind: "Internal" }
+export type Note = { id: number; title: string; body: string }
+export type TaskProgress = { task_id: string; completed: number; total: number; status: TaskStatus }
+export type TaskStatus = "running" | "completed" | "cancelled"
 
 /** tauri-specta globals **/
 

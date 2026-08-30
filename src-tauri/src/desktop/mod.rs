@@ -7,7 +7,7 @@ use tauri::{App, AppHandle, Manager};
 /// デスクトップ固有のセットアップを `lib.rs::run()` から呼び出すためのフック。
 /// 現時点ではプレースホルダ。Phase 4 でトレイ・メニュー等を追加する。
 pub fn setup(_app: &mut App) -> tauri::Result<()> {
-    tracing::debug!("desktop setup placeholder (see #20)");
+    log::debug!("desktop setup placeholder (see #20)");
     Ok(())
 }
 

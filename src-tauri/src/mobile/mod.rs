@@ -4,6 +4,6 @@ use tauri::App;
 
 /// モバイル固有のセットアップを `lib.rs::run()` から呼び出すためのフック。
 pub fn setup(_app: &mut App) -> tauri::Result<()> {
-    tracing::debug!("mobile setup placeholder (see #22)");
+    log::debug!("mobile setup placeholder (see #22)");
     Ok(())
 }

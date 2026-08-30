@@ -78,3 +78,22 @@ app_core::CoreError  →  src-tauri::AppError (#[from])  →  serde  →  フロ
 - Rust: `#[cfg(desktop)]` → `src-tauri/src/desktop/`、`#[cfg(mobile)]` → `src-tauri/src/mobile/`
 - TS: `src/lib/platform.ts` の `isDesktop()` / `isMobile()` で実行時分岐する
 - デスクトップ専用 API を `crates/core` や共通コマンドに混入させない（CI のモバイルコンパイル確認で検出、リスク R-6）
+
+## 8. Phase 3 で追加した土台機能（#14〜#19）
+
+| 機能 | 正本 | 備考 |
+|---|---|---|
+| ロギング（RS-07） | `src-tauri/src/logging.rs` | `tauri-plugin-log`。`RUST_LOG` でレベル制御、OS 標準のログディレクトリに出力 |
+| パニックハンドラ（RS-13） | `src-tauri/src/panic_handler.rs` | パニック内容をログへ退避してからデフォルトの挙動に委ねる |
+| 設定永続化（RS-08） | `tauri_plugin_store::Builder` (`lib.rs`) | 軽量な KV ストア。フロントから `@tauri-apps/plugin-store` で直接読み書きする |
+| SQLite（RS-09） | `crates/core/migrations/`, `crates/core/src/domain/notes.rs` | `sqlx::query!` でコンパイル時検証。オフラインメタデータは `crates/core/.sqlx/`（コミット済み、`SQLX_OFFLINE=true` で CI から利用） |
+| 長時間処理（RS-10） | `src-tauri/src/tasks.rs`, `commands/long_task.rs` | `TaskProgress` イベントで進捗通知、`CancellationToken` でキャンセル |
+| HTTP リトライ（RS-11） | `crates/core/src/net/mod.rs`, `src-tauri/src/http_client.rs` | リトライ制御は `crates/core` でユニットテスト、`reqwest::Client` の構築は `src-tauri` |
+| 資格情報（RS-12） | `src-tauri/src/credentials.rs` | `keyring` クレートで OS キーチェーンに保存。値そのものはコマンドから返さない（SEC-04） |
+| 基本プラグイン（APP-01〜03） | `src/routes/demo.tsx` | ファイルダイアログ・通知・外部リンクは custom command を介さずプラグインの JS API を直接呼ぶ |
+| スプラッシュ（FE-06） | `public/splashscreen.html`, `commands::window::close_splashscreen` | メインウィンドウを `visible: false` で起動し、フロント初期化後にコマンドで表示切替 |
+| i18n 型生成（GEN-05） | `scripts/gen-i18n-types.ts` | ロケール間の欠落キーを検出したら CI を失敗させる |
+| スキャフォールド（GEN-04/06） | `scripts/scaffold-feature.ts` | `pnpm scaffold:feature <name>` で core・コマンド・フロント一式を Red 状態で生成する |
+
+`src/routes/demo.tsx` はこれらのサンプル実装をまとめて確認するためのページで、実プロジェクトでは
+不要になった機能ごと削除してよい（リスク R-7、`docs/recipes/` に削除手順を追って追記する）。
