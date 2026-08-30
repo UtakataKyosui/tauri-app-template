@@ -16,6 +16,16 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
     css: false,
+    // 既定の除外パターンに加え、Claude Code のエージェント用一時ワークツリー
+    // （.claude/worktrees/）配下に存在しうる src/ のコピーを二重に拾わないようにする。
+    exclude: [
+      "**/node_modules/**",
+      "**/dist/**",
+      "**/cypress/**",
+      "**/.{idea,git,cache,output,temp}/**",
+      "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
+      ".claude/worktrees/**",
+    ],
     coverage: {
       provider: "v8",
       reporter: ["text", "html", "lcov"],
