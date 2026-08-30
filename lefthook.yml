@@ -17,7 +17,7 @@ pre-push:
     typecheck:
       run: pnpm typecheck
     frontend-test:
-      run: pnpm test -- --run
+      run: pnpm exec vitest run
     rust-core-test:
       # crates/core の変更がある場合のみ実行し、待ち時間を抑える（R-15）
       files: git diff --name-only @{push} HEAD
