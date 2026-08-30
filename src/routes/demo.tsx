@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { type Note, createNote, deleteNote, listNotes } from "@/lib/api/notes";
 import { type TaskProgress, cancelLongTask, onTaskProgress, startLongTask } from "@/lib/api/tasks";
+import { checkForUpdate, installUpdate } from "@/lib/api/updater";
+import { isDesktop } from "@/lib/platform";
 import { useToastStore } from "@/stores/toast-store";
 import { createFileRoute } from "@tanstack/react-router";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
@@ -34,6 +36,9 @@ function DemoPage() {
       <OpenLinkDemo onError={(m) => pushToast({ title: m, variant: "destructive" })} />
       <LongTaskDemo onError={(m) => pushToast({ title: m, variant: "destructive" })} />
       <NotesDemo onError={(m) => pushToast({ title: m, variant: "destructive" })} />
+      {isDesktop() && (
+        <UpdaterDemo onError={(m) => pushToast({ title: m, variant: "destructive" })} />
+      )}
     </div>
   );
 }
@@ -250,6 +255,54 @@ function NotesDemo({ onError }: DemoSectionProps) {
           </li>
         ))}
       </ul>
+    </section>
+  );
+}
+
+// APP-08: 自動アップデート（デスクトップ専用）
+function UpdaterDemo({ onError }: DemoSectionProps) {
+  const { t } = useTranslation();
+  const [checking, setChecking] = useState(false);
+  const [available, setAvailable] = useState<string | null>(null);
+
+  return (
+    <section className="flex flex-col gap-2">
+      <h2 className="text-sm font-medium">{t("demo.updater.title")}</h2>
+      <div className="flex gap-2">
+        <Button
+          variant="outline"
+          disabled={checking}
+          onClick={async () => {
+            setChecking(true);
+            try {
+              const info = await checkForUpdate();
+              setAvailable(info.available ? (info.version ?? null) : null);
+            } catch (e) {
+              onError(String(e));
+            } finally {
+              setChecking(false);
+            }
+          }}
+        >
+          {t("demo.updater.check")}
+        </Button>
+        {available && (
+          <Button
+            onClick={async () => {
+              try {
+                await installUpdate();
+              } catch (e) {
+                onError(String(e));
+              }
+            }}
+          >
+            {t("demo.updater.install", { version: available })}
+          </Button>
+        )}
+      </div>
+      {!checking && available === null && (
+        <p className="text-xs text-muted-foreground">{t("demo.updater.upToDate")}</p>
+      )}
     </section>
   );
 }

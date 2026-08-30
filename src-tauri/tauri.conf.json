@@ -48,5 +48,13 @@
       "icons/icon.ico"
     ]
   },
-  "plugins": {}
+  "plugins": {
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://github.com/UtakataKyosui/tauri-app-template/releases/latest/download/latest.json"
+      ],
+      "pubkey": "PLACEHOLDER_RUN_pnpm_tauri_signer_generate_AND_REPLACE_THIS_VALUE"
+    }
+  }
 }

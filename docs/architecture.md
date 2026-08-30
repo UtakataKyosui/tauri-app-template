@@ -97,3 +97,16 @@ app_core::CoreError  →  src-tauri::AppError (#[from])  →  serde  →  フロ
 
 `src/routes/demo.tsx` はこれらのサンプル実装をまとめて確認するためのページで、実プロジェクトでは
 不要になった機能ごと削除してよい（リスク R-7、`docs/recipes/` に削除手順を追って追記する）。
+
+## 9. Phase 4 で追加したデスクトップ機能とリリース（#20, #21）
+
+| 機能 | 正本 | 備考 |
+|---|---|---|
+| トレイ・メニュー（APP-04/05） | `src-tauri/src/desktop/mod.rs` | `#[cfg(desktop)]` 配下。モバイルビルドには含まれない |
+| ウィンドウ状態の記憶（APP-06） | `tauri_plugin_window_state`（`lib.rs`） | Phase 1 から登録済み。`capabilities/desktop.json` の `window-state:default` が必要 |
+| 単一インスタンス制御（APP-07） | `tauri_plugin_single_instance`（`lib.rs`）, `desktop::focus_main_window_from_app` | 二重起動時に既存ウィンドウを前面化する |
+| 自動アップデート（APP-08） | `commands/updater.rs`, `src/lib/api/updater.ts` | `#[cfg(desktop)]` 限定。`specta_bindings.rs` はデスクトップ/モバイルで別の `typed_builder()` を持ち、モバイルには含まれない（R-6 対策） |
+| リリースワークフロー（CI-03〜05） | `.github/workflows/release.yml` | タグ push（`v*.*.*`）で 3 OS のインストーラをビルドし GitHub Releases に添付。署名系の secrets が無くてもビルドは失敗しない（R-3, `docs/recipes/signing.md`） |
+| バージョン・CHANGELOG（CI-08） | `.github/workflows/release-please.yml`, `release-please-config.json` | Conventional Commits（QA-12）からリリース PR を自動生成する |
+
+証明書・署名鍵の準備手順は `docs/recipes/signing.md` を参照。

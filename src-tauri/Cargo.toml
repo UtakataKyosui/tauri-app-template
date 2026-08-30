@@ -21,7 +21,7 @@ serde_json.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 sqlx.workspace = true
-tauri = { version = "2", features = [] }
+tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-dialog = "2"
 tauri-plugin-fs = "2"
 tauri-plugin-notification = "2"

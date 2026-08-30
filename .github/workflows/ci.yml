@@ -125,14 +125,20 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # GEN-02: 全生成物について、再生成後の差分を検出する
+      # GEN-02: 全生成物について、再生成後の差分を検出する。routeTree.gen.ts /
+      # keys.gen.ts はコミットしない生成物（gitignore 対象）なので、コミットされている
+      # bindings.ts のみを diff で検証する。3 OS で動かすため shell を bash に固定する
+      # （既定シェルが pwsh の Windows で `||`/`exit` が意図通り解釈されないため）。
       - name: Regenerate bindings and routes, then check for drift
+        shell: bash
         run: |
           pnpm generate:bindings
           pnpm generate:routes
           pnpm generate:i18n-types
-          git diff --exit-code -- src/lib/bindings.ts src/routeTree.gen.ts src/locales/keys.gen.ts || \
-            (echo "::error::生成物に差分があります。'pnpm generate' を実行してコミットしてください" && exit 1)
+          if ! git diff --exit-code -- src/lib/bindings.ts; then
+            echo "::error::src/lib/bindings.ts に差分があります。'pnpm generate:bindings' を実行してコミットしてください"
+            exit 1
+          fi
 
       - name: Clippy (src-tauri, all targets)
         run: cargo clippy -p tauri-app-template --all-targets -- -D warnings
@@ -144,7 +150,7 @@ jobs:
         run: pnpm build
 
       - name: Tauri build (debug, no bundle signing)
-        run: cargo tauri build --debug --no-bundle
+        run: pnpm tauri build --debug --no-bundle
         env:
           CI: true
 

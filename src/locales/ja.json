@@ -28,6 +28,12 @@
       "placeholder": "タイトル",
       "add": "追加",
       "delete": "削除"
+    },
+    "updater": {
+      "title": "自動アップデート",
+      "check": "アップデートを確認",
+      "install": "v{{version}} をインストール",
+      "upToDate": "最新版です"
     }
   }
 }

@@ -28,6 +28,12 @@
       "placeholder": "Title",
       "add": "Add",
       "delete": "Delete"
+    },
+    "updater": {
+      "title": "Auto update",
+      "check": "Check for updates",
+      "install": "Install v{{version}}",
+      "upToDate": "You're up to date"
     }
   }
 }

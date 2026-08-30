@@ -111,6 +111,30 @@ async closeSplashscreen() : Promise<Result<null, AppError>> {
     if(e instanceof Error) throw e;
     else return { status: "error", error: e  as any };
 }
+},
+/**
+ * APP-08: 自動アップデート。署名検証は tauri-plugin-updater が config の pubkey に基づき
+ * 行う（CI-05 で鍵と配信マニフェストを生成する）。デスクトップのみで意味を持つ機能
+ * （§3, レビュー観点 §3）。
+ */
+async checkForUpdate() : Promise<Result<UpdateInfo, AppError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("check_for_update") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
+},
+/**
+ * アップデートをダウンロードして適用する。呼び出し後はアプリの再起動が必要。
+ */
+async installUpdate() : Promise<Result<null, AppError>> {
+    try {
+    return { status: "ok", data: await TAURI_INVOKE("install_update") };
+} catch (e) {
+    if(e instanceof Error) throw e;
+    else return { status: "error", error: e  as any };
+}
 }
 }
 
@@ -145,6 +169,7 @@ export type CoreError = { kind: "InvalidInput"; message: string } | { kind: "Not
 export type Note = { id: number; title: string; body: string }
 export type TaskProgress = { task_id: string; completed: number; total: number; status: TaskStatus }
 export type TaskStatus = "running" | "completed" | "cancelled"
+export type UpdateInfo = { available: boolean; version: string | null }
 
 /** tauri-specta globals **/
 
