@@ -90,7 +90,7 @@ app_core::CoreError  →  src-tauri::AppError (#[from])  →  serde  →  フロ
 | 長時間処理（RS-10） | `src-tauri/src/tasks.rs`, `commands/long_task.rs` | `TaskProgress` イベントで進捗通知、`CancellationToken` でキャンセル |
 | HTTP リトライ（RS-11） | `crates/core/src/net/mod.rs`, `src-tauri/src/http_client.rs` | リトライ制御は `crates/core` でユニットテスト、`reqwest::Client` の構築は `src-tauri` |
 | 資格情報（RS-12） | `src-tauri/src/credentials.rs` | `keyring` クレートで OS キーチェーンに保存。値そのものはコマンドから返さない（SEC-04） |
-| 基本プラグイン（APP-01〜03） | `src/routes/demo.tsx` | ファイルダイアログ・通知・外部リンクは custom command を介さずプラグインの JS API を直接呼ぶ |
+| 基本プラグイン（APP-01〜03） | `src/routes/demo.tsx` | ファイルダイアログ・通知・外部リンクは custom command を介さずプラグインの JS API を直接呼ぶ。外部リンクは既定ブラウザが URL を握り潰しても成功扱いになり、アプリからは検知できない（R-16） |
 | スプラッシュ（FE-06） | `public/splashscreen.html`, `commands::window::close_splashscreen` | メインウィンドウを `visible: false` で起動し、フロント初期化後にコマンドで表示切替 |
 | i18n 型生成（GEN-05） | `scripts/gen-i18n-types.ts` | ロケール間の欠落キーを検出したら CI を失敗させる |
 | スキャフォールド（GEN-04/06） | `scripts/scaffold-feature.ts` | `pnpm scaffold:feature <name>` で core・コマンド・フロント一式を Red 状態で生成する |
@@ -127,3 +127,12 @@ app_core::CoreError  →  src-tauri::AppError (#[from])  →  serde  →  フロ
 - Rust 側は `src-tauri/src/specta_bindings.rs` が `#[cfg(desktop)]` / `#[cfg(mobile)]` で
   別々の `typed_builder()` を持ち、デスクトップ専用コマンド（`updater`）はモバイル向け
   バイナリに含まれない
+
+## 12. 既知の制約
+
+- **macOS の dev 実行ではネイティブ通知が表示されないことがある（#37）** — `pnpm tauri dev` は
+  `.app` バンドルではなく `target/debug/` の生バイナリを直接起動する。macOS の通知センターは
+  バンドル ID を持たないプロセスからの通知をエラーを返さずに破棄するため、
+  `notification:default` の capabilities が正しくても通知が出ない。動作確認は
+  `pnpm tauri build` で生成した `.app` から起動して行う。`src/routes/demo.tsx` の
+  `NotificationDemo` は `isPermissionGranted()` の結果を画面に表示し、この注記も併記する
