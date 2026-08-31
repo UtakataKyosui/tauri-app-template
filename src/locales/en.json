@@ -23,7 +23,11 @@
       "title": "Native notification",
       "send": "Send notification",
       "body": "This is a test notification",
-      "denied": "Notification permission was not granted"
+      "denied": "Notification permission was not granted",
+      "permissionGranted": "Permission: granted",
+      "permissionNotGranted": "Permission: not granted",
+      "permissionChecking": "Checking permission",
+      "devNote": "When launched with pnpm tauri dev, macOS Notification Center discards notifications from processes without a bundle ID, so notifications may not appear. Verify with a build from pnpm tauri build instead."
     },
     "openLink": { "title": "External link", "open": "Open in browser" },
     "longTask": { "title": "Async task with progress", "start": "Start", "cancel": "Cancel" },

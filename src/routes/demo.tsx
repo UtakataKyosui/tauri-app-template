@@ -81,8 +81,13 @@ function FileDemo({ onError }: DemoSectionProps) {
 }
 
 // APP-02: ネイティブ通知
-function NotificationDemo({ onError }: DemoSectionProps) {
+export function NotificationDemo({ onError }: DemoSectionProps) {
   const { t } = useTranslation();
+  const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    isPermissionGranted().then(setPermissionGranted);
+  }, []);
 
   return (
     <section className="flex flex-col gap-2">
@@ -96,6 +101,7 @@ function NotificationDemo({ onError }: DemoSectionProps) {
               // モバイルでは要求フローがデスクトップと異なる（OS のダイアログに委譲される）
               granted = (await requestPermission()) === "granted";
             }
+            setPermissionGranted(granted);
             if (granted) {
               sendNotification({
                 title: t("demo.notification.title"),
@@ -111,6 +117,14 @@ function NotificationDemo({ onError }: DemoSectionProps) {
       >
         {t("demo.notification.send")}
       </Button>
+      <p className="text-xs text-muted-foreground">
+        {permissionGranted === null
+          ? t("demo.notification.permissionChecking")
+          : permissionGranted
+            ? t("demo.notification.permissionGranted")
+            : t("demo.notification.permissionNotGranted")}
+      </p>
+      <p className="text-xs text-muted-foreground">{t("demo.notification.devNote")}</p>
     </section>
   );
 }

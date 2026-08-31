@@ -127,3 +127,12 @@ app_core::CoreError  →  src-tauri::AppError (#[from])  →  serde  →  フロ
 - Rust 側は `src-tauri/src/specta_bindings.rs` が `#[cfg(desktop)]` / `#[cfg(mobile)]` で
   別々の `typed_builder()` を持ち、デスクトップ専用コマンド（`updater`）はモバイル向け
   バイナリに含まれない
+
+## 12. 既知の制約
+
+- **macOS の dev 実行ではネイティブ通知が表示されないことがある（#37）** — `pnpm tauri dev` は
+  `.app` バンドルではなく `target/debug/` の生バイナリを直接起動する。macOS の通知センターは
+  バンドル ID を持たないプロセスからの通知をエラーを返さずに破棄するため、
+  `notification:default` の capabilities が正しくても通知が出ない。動作確認は
+  `pnpm tauri build` で生成した `.app` から起動して行う。`src/routes/demo.tsx` の
+  `NotificationDemo` は `isPermissionGranted()` の結果を画面に表示し、この注記も併記する

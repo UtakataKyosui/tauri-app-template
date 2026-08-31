@@ -23,7 +23,11 @@
       "title": "ネイティブ通知",
       "send": "通知を送信",
       "body": "テスト通知です",
-      "denied": "通知の権限が許可されていません"
+      "denied": "通知の権限が許可されていません",
+      "permissionGranted": "権限: 許可済み",
+      "permissionNotGranted": "権限: 未許可",
+      "permissionChecking": "権限を確認中",
+      "devNote": "pnpm tauri dev で起動した場合、macOS の通知センターがバンドルIDを持たないプロセスからの通知を破棄するため、通知が表示されないことがあります。動作確認は pnpm tauri build で生成したアプリから行ってください。"
     },
     "openLink": { "title": "外部リンク", "open": "ブラウザで開く" },
     "longTask": { "title": "進捗付き非同期処理", "start": "開始", "cancel": "キャンセル" },
