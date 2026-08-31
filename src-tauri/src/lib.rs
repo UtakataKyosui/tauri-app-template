@@ -26,7 +26,13 @@ pub fn run() {
     let builder = specta_bindings::typed_builder();
 
     let mut app_builder = tauri::Builder::default()
+        // RS-07: Rust 側 Builder 登録のみで完結し、フロントから
+        // @tauri-apps/plugin-log を呼ぶ経路が無い（IPC を経由しない）ため、
+        // capabilities に log:default は追加しない（#41）。
         .plugin(logging::plugin())
+        // RS-08: フロントから @tauri-apps/plugin-store を使い始めるまでは
+        // capabilities に store:default を追加しない（投機的な権限追加の禁止、
+        // CLAUDE.md）。使い始める時点で該当 capability に追加すること（#41）。
         .plugin(tauri_plugin_store::Builder::new().build())
         // APP-09: ディープリンク（カスタム URL スキーム）。両プラットフォーム対応。
         // スキームは tauri.conf.json の plugins."deep-link".schemes で定義する。
