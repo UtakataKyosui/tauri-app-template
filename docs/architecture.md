@@ -90,7 +90,7 @@ app_core::CoreError  →  src-tauri::AppError (#[from])  →  serde  →  フロ
 | 長時間処理（RS-10） | `src-tauri/src/tasks.rs`, `commands/long_task.rs` | `TaskProgress` イベントで進捗通知、`CancellationToken` でキャンセル |
 | HTTP リトライ（RS-11） | `crates/core/src/net/mod.rs`, `src-tauri/src/http_client.rs` | リトライ制御は `crates/core` でユニットテスト、`reqwest::Client` の構築は `src-tauri` |
 | 資格情報（RS-12） | `src-tauri/src/credentials.rs` | `keyring` クレートで OS キーチェーンに保存。値そのものはコマンドから返さない（SEC-04） |
-| 基本プラグイン（APP-01〜03） | `src/routes/demo.tsx` | ファイルダイアログ・通知・外部リンクは custom command を介さずプラグインの JS API を直接呼ぶ |
+| 基本プラグイン（APP-01〜03） | `src/routes/demo.tsx` | ファイルダイアログ・通知・外部リンクは custom command を介さずプラグインの JS API を直接呼ぶ。外部リンクは既定ブラウザが URL を握り潰しても成功扱いになり、アプリからは検知できない（R-16） |
 | スプラッシュ（FE-06） | `public/splashscreen.html`, `commands::window::close_splashscreen` | メインウィンドウを `visible: false` で起動し、フロント初期化後にコマンドで表示切替 |
 | i18n 型生成（GEN-05） | `scripts/gen-i18n-types.ts` | ロケール間の欠落キーを検出したら CI を失敗させる |
 | スキャフォールド（GEN-04/06） | `scripts/scaffold-feature.ts` | `pnpm scaffold:feature <name>` で core・コマンド・フロント一式を Red 状態で生成する |

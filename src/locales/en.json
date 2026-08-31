@@ -33,7 +33,11 @@
       "permissionChecking": "Checking permission",
       "devNote": "When launched with pnpm tauri dev, macOS Notification Center discards notifications from processes without a bundle ID, so notifications may not appear. Verify with a build from pnpm tauri build instead."
     },
-    "openLink": { "title": "External link", "open": "Open in browser" },
+    "openLink": {
+      "title": "External link",
+      "open": "Open in browser",
+      "notice": "Opens in your OS default browser. If nothing happens, check your default browser's settings."
+    },
     "longTask": { "title": "Async task with progress", "start": "Start", "cancel": "Cancel" },
     "notes": {
       "title": "Notes (SQLite persistence)",

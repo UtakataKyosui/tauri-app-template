@@ -33,7 +33,11 @@
       "permissionChecking": "権限を確認中",
       "devNote": "pnpm tauri dev で起動した場合、macOS の通知センターがバンドルIDを持たないプロセスからの通知を破棄するため、通知が表示されないことがあります。動作確認は pnpm tauri build で生成したアプリから行ってください。"
     },
-    "openLink": { "title": "外部リンク", "open": "ブラウザで開く" },
+    "openLink": {
+      "title": "外部リンク",
+      "open": "ブラウザで開く",
+      "notice": "OS の既定ブラウザで開きます。開かない場合は既定ブラウザ側の設定を確認してください。"
+    },
     "longTask": { "title": "進捗付き非同期処理", "start": "開始", "cancel": "キャンセル" },
     "notes": {
       "title": "メモ（SQLite 永続化）",
