@@ -21,7 +21,8 @@
     "file": {
       "title": "File picker / read",
       "open": "Open a file",
-      "hint": "This demo reads the file as text. Binary files such as images are not supported (#34)."
+      "hint": "Text files show their content; image files show a preview.",
+      "imageAlt": "Preview of the selected image"
     },
     "notification": {
       "title": "Native notification",
