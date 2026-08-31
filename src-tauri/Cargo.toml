@@ -3,7 +3,7 @@ name = "tauri-app-template"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-rust-version = "1.82"
+rust-version = "1.94"
 # bin が gen-bindings と 2 つあるため、`cargo run` の既定を明示する（tauri dev が使う）。
 default-run = "tauri-app-template"
 
