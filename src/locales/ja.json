@@ -18,14 +18,27 @@
   },
   "demo": {
     "title": "機能デモ",
-    "file": { "title": "ファイル選択 / 読み込み", "open": "ファイルを開く" },
+    "file": {
+      "title": "ファイル選択 / 読み込み",
+      "open": "ファイルを開く",
+      "hint": "テキストファイルは内容を、画像ファイルはプレビューを表示します。",
+      "imageAlt": "選択した画像のプレビュー"
+    },
     "notification": {
       "title": "ネイティブ通知",
       "send": "通知を送信",
       "body": "テスト通知です",
-      "denied": "通知の権限が許可されていません"
+      "denied": "通知の権限が許可されていません",
+      "permissionGranted": "権限: 許可済み",
+      "permissionNotGranted": "権限: 未許可",
+      "permissionChecking": "権限を確認中",
+      "devNote": "pnpm tauri dev で起動した場合、macOS の通知センターがバンドルIDを持たないプロセスからの通知を破棄するため、通知が表示されないことがあります。動作確認は pnpm tauri build で生成したアプリから行ってください。"
     },
-    "openLink": { "title": "外部リンク", "open": "ブラウザで開く" },
+    "openLink": {
+      "title": "外部リンク",
+      "open": "ブラウザで開く",
+      "notice": "OS の既定ブラウザで開きます。開かない場合は既定ブラウザ側の設定を確認してください。"
+    },
     "longTask": { "title": "進捗付き非同期処理", "start": "開始", "cancel": "キャンセル" },
     "notes": {
       "title": "メモ（SQLite 永続化）",
@@ -37,7 +50,9 @@
       "title": "自動アップデート",
       "check": "アップデートを確認",
       "install": "v{{version}} をインストール",
-      "upToDate": "最新版です"
+      "checking": "確認中...",
+      "upToDate": "最新版です",
+      "failed": "確認に失敗しました: {{message}}"
     }
   }
 }
