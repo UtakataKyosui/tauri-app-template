@@ -19,12 +19,14 @@ pre-push:
     frontend-test:
       run: pnpm exec vitest run
     rust-core-test:
-      # crates/core の変更がある場合のみ実行し、待ち時間を抑える（R-15）
-      files: git diff --name-only @{push} HEAD
+      # crates/core の変更がある場合のみ実行し、待ち時間を抑える（R-15）。
+      # @{push} は新規ブランチの初回 push 時に upstream 未設定で解決できず
+      # exit 128 になるため、常に存在する origin/main を差分の基準にする。
+      files: git diff --name-only origin/main...HEAD
       glob: "crates/core/**/*.rs"
       run: cargo test -p app-core
     rust-tauri-clippy:
-      files: git diff --name-only @{push} HEAD
+      files: git diff --name-only origin/main...HEAD
       glob: "src-tauri/**/*.rs"
       run: cargo clippy -p tauri-app-template --all-targets -- -D warnings
 
