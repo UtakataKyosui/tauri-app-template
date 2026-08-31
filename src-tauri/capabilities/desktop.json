@@ -11,6 +11,10 @@
     "fs:allow-read-file",
     "notification:default",
     "opener:default",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [{ "url": "https://*", "app": "Safari" }]
+    },
     "os:default",
     "window-state:default",
     "updater:default"

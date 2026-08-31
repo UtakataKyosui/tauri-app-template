@@ -15,6 +15,7 @@ import {
   sendNotification,
 } from "@tauri-apps/plugin-notification";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import { platform } from "@tauri-apps/plugin-os";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -163,25 +164,53 @@ export function NotificationDemo({ onError }: DemoSectionProps) {
   );
 }
 
+const DEMO_URL = "https://tauri.app";
+
 // APP-03: 外部リンクを OS 既定ブラウザで開く
-function OpenLinkDemo({ onError }: DemoSectionProps) {
+export function OpenLinkDemo({ onError }: DemoSectionProps) {
   const { t } = useTranslation();
+  // 既定ブラウザ（例: Arc）が URL を握り潰しても /usr/bin/open の終了コードは
+  // 0 のままでアプリ側からは検知できない（#38）。Safari を明示指定すれば
+  // この既定ブラウザ側の問題を回避できるため、macOS でのみ選択肢を出す。
+  const [isMacos, setIsMacos] = useState(false);
+
+  useEffect(() => {
+    if (isDesktop()) {
+      setIsMacos(platform() === "macos");
+    }
+  }, []);
 
   return (
     <section className="flex flex-col gap-2">
       <h2 className="text-sm font-medium">{t("demo.openLink.title")}</h2>
-      <Button
-        variant="outline"
-        onClick={async () => {
-          try {
-            await openUrl("https://tauri.app");
-          } catch (e) {
-            onError(String(e));
-          }
-        }}
-      >
-        {t("demo.openLink.open")}
-      </Button>
+      <div className="flex gap-2">
+        <Button
+          variant="outline"
+          onClick={async () => {
+            try {
+              await openUrl(DEMO_URL);
+            } catch (e) {
+              onError(String(e));
+            }
+          }}
+        >
+          {t("demo.openLink.open")}
+        </Button>
+        {isMacos && (
+          <Button
+            variant="outline"
+            onClick={async () => {
+              try {
+                await openUrl(DEMO_URL, "Safari");
+              } catch (e) {
+                onError(String(e));
+              }
+            }}
+          >
+            {t("demo.openLink.openWithSafari")}
+          </Button>
+        )}
+      </div>
       <p className="text-xs text-muted-foreground">{t("demo.openLink.notice")}</p>
     </section>
   );

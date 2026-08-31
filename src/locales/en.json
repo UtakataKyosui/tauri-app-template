@@ -37,7 +37,8 @@
     "openLink": {
       "title": "External link",
       "open": "Open in browser",
-      "notice": "Opens in your OS default browser. If nothing happens, check your default browser's settings."
+      "openWithSafari": "Open with Safari",
+      "notice": "Opens in your OS default browser. If nothing happens, check your default browser's settings, or try the Open with Safari button."
     },
     "longTask": { "title": "Async task with progress", "start": "Start", "cancel": "Cancel" },
     "notes": {
