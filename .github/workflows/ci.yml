@@ -228,7 +228,7 @@ jobs:
       - name: Generate routes and i18n types
         run: pnpm generate:routes && pnpm generate:i18n-types
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: "temurin"
           java-version: "17"
