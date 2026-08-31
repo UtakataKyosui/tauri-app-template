@@ -45,7 +45,9 @@
       "title": "Auto update",
       "check": "Check for updates",
       "install": "Install v{{version}}",
-      "upToDate": "You're up to date"
+      "checking": "Checking...",
+      "upToDate": "You're up to date",
+      "failed": "Check failed: {{message}}"
     }
   }
 }

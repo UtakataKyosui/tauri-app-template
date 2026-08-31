@@ -45,7 +45,9 @@
       "title": "自動アップデート",
       "check": "アップデートを確認",
       "install": "v{{version}} をインストール",
-      "upToDate": "最新版です"
+      "checking": "確認中...",
+      "upToDate": "最新版です",
+      "failed": "確認に失敗しました: {{message}}"
     }
   }
 }
