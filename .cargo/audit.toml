@@ -6,13 +6,5 @@
 # 解消条件: Cargo.lock の glib が 0.18.5 より新しくなったら、このエントリを外して
 # `cargo audit` が通ることを確認する。
 
-# RUSTSEC-2023-0071: rsa 0.9.10 に Marvin Attack（タイミングサイドチャネルによる
-# 秘密鍵復元の可能性）がある。上流に修正版は存在しない（advisory 本文で明言）。
-# rsa は sqlx が optional dependency として宣言している sqlx-mysql 経由のもので、
-# このワークスペースの sqlx は `default-features = false, features = ["sqlite", ...]`
-# で mysql を無効化しているため、実際のビルド・実行パスには rsa は含まれない
-# （Cargo.lock には sqlx の全 backend が候補として残るため audit 上は検出される）。
-# `grep -n "name = \"sqlx-mysql\"" -A5 Cargo.lock` で mysql feature が有効化されて
-# いないことを確認できる。上流で修正版が出たら解消し、このエントリを外す。
 [advisories]
-ignore = ["RUSTSEC-2024-0429", "RUSTSEC-2023-0071"]
+ignore = ["RUSTSEC-2024-0429"]
