@@ -18,14 +18,27 @@
   },
   "demo": {
     "title": "Feature demo",
-    "file": { "title": "File picker / read", "open": "Open a file" },
+    "file": {
+      "title": "File picker / read",
+      "open": "Open a file",
+      "hint": "Text files show their content; image files show a preview.",
+      "imageAlt": "Preview of the selected image"
+    },
     "notification": {
       "title": "Native notification",
       "send": "Send notification",
       "body": "This is a test notification",
-      "denied": "Notification permission was not granted"
+      "denied": "Notification permission was not granted",
+      "permissionGranted": "Permission: granted",
+      "permissionNotGranted": "Permission: not granted",
+      "permissionChecking": "Checking permission",
+      "devNote": "When launched with pnpm tauri dev, macOS Notification Center discards notifications from processes without a bundle ID, so notifications may not appear. Verify with a build from pnpm tauri build instead."
     },
-    "openLink": { "title": "External link", "open": "Open in browser" },
+    "openLink": {
+      "title": "External link",
+      "open": "Open in browser",
+      "notice": "Opens in your OS default browser. If nothing happens, check your default browser's settings."
+    },
     "longTask": { "title": "Async task with progress", "start": "Start", "cancel": "Cancel" },
     "notes": {
       "title": "Notes (SQLite persistence)",
@@ -37,7 +50,9 @@
       "title": "Auto update",
       "check": "Check for updates",
       "install": "Install v{{version}}",
-      "upToDate": "You're up to date"
+      "checking": "Checking...",
+      "upToDate": "You're up to date",
+      "failed": "Check failed: {{message}}"
     }
   }
 }
