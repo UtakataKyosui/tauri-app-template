@@ -3,6 +3,7 @@ import { type Note, createNote, deleteNote, listNotes } from "@/lib/api/notes";
 import { type TaskProgress, cancelLongTask, onTaskProgress, startLongTask } from "@/lib/api/tasks";
 import { checkForUpdate, installUpdate } from "@/lib/api/updater";
 import { isDesktop } from "@/lib/platform";
+import { type UpdaterStatus, toUpdaterStatus } from "@/lib/updater-status";
 import { useToastStore } from "@/stores/toast-store";
 import { createFileRoute } from "@tanstack/react-router";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
@@ -272,9 +273,8 @@ function NotesDemo({ onError }: DemoSectionProps) {
 // APP-08: 自動アップデート（デスクトップ専用）
 function UpdaterDemo({ onError }: DemoSectionProps) {
   const { t } = useTranslation();
-  const [checking, setChecking] = useState(false);
+  const [status, setStatus] = useState<UpdaterStatus>({ kind: "idle" });
   const [installing, setInstalling] = useState(false);
-  const [available, setAvailable] = useState<string | null>(null);
 
   return (
     <section className="flex flex-col gap-2">
@@ -282,22 +282,22 @@ function UpdaterDemo({ onError }: DemoSectionProps) {
       <div className="flex gap-2">
         <Button
           variant="outline"
-          disabled={checking}
+          disabled={status.kind === "checking"}
           onClick={async () => {
-            setChecking(true);
+            setStatus({ kind: "checking" });
             try {
               const info = await checkForUpdate();
-              setAvailable(info.available ? (info.version ?? null) : null);
+              setStatus(toUpdaterStatus(info));
             } catch (e) {
-              onError(String(e));
-            } finally {
-              setChecking(false);
+              const message = String(e);
+              setStatus({ kind: "failed", message });
+              onError(message);
             }
           }}
         >
           {t("demo.updater.check")}
         </Button>
-        {available && (
+        {status.kind === "available" && (
           <Button
             disabled={installing}
             onClick={async () => {
@@ -311,12 +311,20 @@ function UpdaterDemo({ onError }: DemoSectionProps) {
               }
             }}
           >
-            {t("demo.updater.install", { version: available })}
+            {t("demo.updater.install", { version: status.version })}
           </Button>
         )}
       </div>
-      {!checking && available === null && (
+      {status.kind === "checking" && (
+        <p className="text-xs text-muted-foreground">{t("demo.updater.checking")}</p>
+      )}
+      {status.kind === "upToDate" && (
         <p className="text-xs text-muted-foreground">{t("demo.updater.upToDate")}</p>
+      )}
+      {status.kind === "failed" && (
+        <p className="text-xs text-destructive">
+          {t("demo.updater.failed", { message: status.message })}
+        </p>
       )}
     </section>
   );
