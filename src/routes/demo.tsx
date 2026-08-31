@@ -2,12 +2,13 @@ import { Button } from "@/components/ui/button";
 import { type Note, createNote, deleteNote, listNotes } from "@/lib/api/notes";
 import { type TaskProgress, cancelLongTask, onTaskProgress, startLongTask } from "@/lib/api/tasks";
 import { checkForUpdate, installUpdate } from "@/lib/api/updater";
+import { isImagePath, mimeTypeForImagePath } from "@/lib/file-preview";
 import { isDesktop } from "@/lib/platform";
 import { type UpdaterStatus, toUpdaterStatus } from "@/lib/updater-status";
 import { useToastStore } from "@/stores/toast-store";
 import { createFileRoute } from "@tanstack/react-router";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
-import { readTextFile } from "@tauri-apps/plugin-fs";
+import { readFile, readTextFile } from "@tauri-apps/plugin-fs";
 import {
   isPermissionGranted,
   requestPermission,
@@ -48,10 +49,22 @@ interface DemoSectionProps {
   onError: (message: string) => void;
 }
 
+type FilePreview = { kind: "text"; content: string } | { kind: "image"; objectUrl: string };
+
 // APP-01: ファイル選択ダイアログ / ファイル読み書き
 function FileDemo({ onError }: DemoSectionProps) {
   const { t } = useTranslation();
-  const [preview, setPreview] = useState<string | null>(null);
+  const [preview, setPreview] = useState<FilePreview | null>(null);
+
+  // Blob URL はページ内でしか有効でないため、選択し直す・アンマウントする際に
+  // 明示的に revoke しないとメモリリークする（#34）。
+  useEffect(() => {
+    return () => {
+      if (preview?.kind === "image") {
+        URL.revokeObjectURL(preview.objectUrl);
+      }
+    };
+  }, [preview]);
 
   return (
     <section className="flex flex-col gap-2">
@@ -62,18 +75,23 @@ function FileDemo({ onError }: DemoSectionProps) {
           try {
             const path = await openDialog({
               multiple: false,
-              // #34 で画像プレビューが入るまではテキストしか扱えないため、
-              // 選択できる拡張子を絞る（#44）。
               filters: [
                 { name: "Text", extensions: ["txt", "md", "json", "toml", "yaml", "csv", "log"] },
+                { name: "Image", extensions: ["png", "jpg", "jpeg", "gif", "webp", "bmp", "ico"] },
               ],
             });
             if (!path || Array.isArray(path)) return;
             // フロントから受け取ったパスをそのまま渡すが、これはダイアログが返した
             // 検証済みの値であり、ユーザー入力の任意文字列ではない点に注意
             // （レビュー観点 §1、任意文字列を渡す場合は別途検証すること）。
-            const content = await readTextFile(path);
-            setPreview(content.slice(0, 200));
+            if (isImagePath(path)) {
+              const bytes = await readFile(path);
+              const blob = new Blob([bytes], { type: mimeTypeForImagePath(path) });
+              setPreview({ kind: "image", objectUrl: URL.createObjectURL(blob) });
+            } else {
+              const content = await readTextFile(path);
+              setPreview({ kind: "text", content: content.slice(0, 200) });
+            }
           } catch (e) {
             onError(String(e));
           }
@@ -82,8 +100,15 @@ function FileDemo({ onError }: DemoSectionProps) {
         {t("demo.file.open")}
       </Button>
       <p className="text-xs text-muted-foreground">{t("demo.file.hint")}</p>
-      {preview && (
-        <pre className="whitespace-pre-wrap text-xs text-muted-foreground">{preview}</pre>
+      {preview?.kind === "text" && (
+        <pre className="whitespace-pre-wrap text-xs text-muted-foreground">{preview.content}</pre>
+      )}
+      {preview?.kind === "image" && (
+        <img
+          src={preview.objectUrl}
+          alt={t("demo.file.imageAlt")}
+          className="max-h-48 w-auto rounded-md border border-input object-contain"
+        />
       )}
     </section>
   );
