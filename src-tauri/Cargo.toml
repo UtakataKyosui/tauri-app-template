@@ -4,6 +4,8 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 rust-version = "1.82"
+# bin が gen-bindings と 2 つあるため、`cargo run` の既定を明示する（tauri dev が使う）。
+default-run = "tauri-app-template"
 
 # RS-01: モバイル対応のため lib target を用意し、main.rs と mobile 双方から
 # `tauri_app_template_lib::run()` を呼び出す。
