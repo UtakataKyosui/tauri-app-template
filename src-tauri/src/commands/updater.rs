@@ -17,12 +17,16 @@ pub struct UpdateInfo {
 #[tauri::command]
 #[specta::specta]
 pub async fn check_for_update(app: AppHandle) -> AppResult<UpdateInfo> {
-    let update = app
-        .updater()
-        .map_err(|e| AppError::Io(e.to_string()))?
-        .check()
-        .await
-        .map_err(|e| AppError::Io(e.to_string()))?;
+    let updater = app.updater().map_err(|e| AppError::Io(e.to_string()))?;
+
+    // 初回リリース前など配信マニフェストが存在しない場合、プラグインは
+    // ReleaseNotFound を返す。これは「取得失敗」ではなく「更新なし」として扱う
+    // （Issue #36）。それ以外のエラーは従来どおりフロントに伝える。
+    let update = match updater.check().await {
+        Ok(update) => update,
+        Err(tauri_plugin_updater::Error::ReleaseNotFound) => None,
+        Err(e) => return Err(AppError::Io(e.to_string())),
+    };
 
     Ok(match update {
         Some(update) => UpdateInfo {

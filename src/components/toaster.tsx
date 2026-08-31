@@ -7,7 +7,7 @@ export function Toaster() {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed bottom-safe-bottom right-4 z-50 flex flex-col gap-2 p-4">
+    <output className="fixed bottom-safe-bottom right-4 z-50 flex flex-col gap-2 p-4">
       {toasts.map((toast) => (
         <button
           type="button"
@@ -22,6 +22,6 @@ export function Toaster() {
           {toast.title}
         </button>
       ))}
-    </div>
+    </output>
   );
 }

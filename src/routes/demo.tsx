@@ -2,11 +2,13 @@ import { Button } from "@/components/ui/button";
 import { type Note, createNote, deleteNote, listNotes } from "@/lib/api/notes";
 import { type TaskProgress, cancelLongTask, onTaskProgress, startLongTask } from "@/lib/api/tasks";
 import { checkForUpdate, installUpdate } from "@/lib/api/updater";
+import { isImagePath, mimeTypeForImagePath } from "@/lib/file-preview";
 import { isDesktop } from "@/lib/platform";
+import { type UpdaterStatus, toUpdaterStatus } from "@/lib/updater-status";
 import { useToastStore } from "@/stores/toast-store";
 import { createFileRoute } from "@tanstack/react-router";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
-import { readTextFile } from "@tauri-apps/plugin-fs";
+import { readFile, readTextFile } from "@tauri-apps/plugin-fs";
 import {
   isPermissionGranted,
   requestPermission,
@@ -47,10 +49,22 @@ interface DemoSectionProps {
   onError: (message: string) => void;
 }
 
+type FilePreview = { kind: "text"; content: string } | { kind: "image"; objectUrl: string };
+
 // APP-01: ファイル選択ダイアログ / ファイル読み書き
 function FileDemo({ onError }: DemoSectionProps) {
   const { t } = useTranslation();
-  const [preview, setPreview] = useState<string | null>(null);
+  const [preview, setPreview] = useState<FilePreview | null>(null);
+
+  // Blob URL はページ内でしか有効でないため、選択し直す・アンマウントする際に
+  // 明示的に revoke しないとメモリリークする（#34）。
+  useEffect(() => {
+    return () => {
+      if (preview?.kind === "image") {
+        URL.revokeObjectURL(preview.objectUrl);
+      }
+    };
+  }, [preview]);
 
   return (
     <section className="flex flex-col gap-2">
@@ -59,13 +73,25 @@ function FileDemo({ onError }: DemoSectionProps) {
         variant="outline"
         onClick={async () => {
           try {
-            const path = await openDialog({ multiple: false });
+            const path = await openDialog({
+              multiple: false,
+              filters: [
+                { name: "Text", extensions: ["txt", "md", "json", "toml", "yaml", "csv", "log"] },
+                { name: "Image", extensions: ["png", "jpg", "jpeg", "gif", "webp", "bmp", "ico"] },
+              ],
+            });
             if (!path || Array.isArray(path)) return;
             // フロントから受け取ったパスをそのまま渡すが、これはダイアログが返した
             // 検証済みの値であり、ユーザー入力の任意文字列ではない点に注意
             // （レビュー観点 §1、任意文字列を渡す場合は別途検証すること）。
-            const content = await readTextFile(path);
-            setPreview(content.slice(0, 200));
+            if (isImagePath(path)) {
+              const bytes = await readFile(path);
+              const blob = new Blob([bytes], { type: mimeTypeForImagePath(path) });
+              setPreview({ kind: "image", objectUrl: URL.createObjectURL(blob) });
+            } else {
+              const content = await readTextFile(path);
+              setPreview({ kind: "text", content: content.slice(0, 200) });
+            }
           } catch (e) {
             onError(String(e));
           }
@@ -73,16 +99,29 @@ function FileDemo({ onError }: DemoSectionProps) {
       >
         {t("demo.file.open")}
       </Button>
-      {preview && (
-        <pre className="whitespace-pre-wrap text-xs text-muted-foreground">{preview}</pre>
+      <p className="text-xs text-muted-foreground">{t("demo.file.hint")}</p>
+      {preview?.kind === "text" && (
+        <pre className="whitespace-pre-wrap text-xs text-muted-foreground">{preview.content}</pre>
+      )}
+      {preview?.kind === "image" && (
+        <img
+          src={preview.objectUrl}
+          alt={t("demo.file.imageAlt")}
+          className="max-h-48 w-auto rounded-md border border-input object-contain"
+        />
       )}
     </section>
   );
 }
 
 // APP-02: ネイティブ通知
-function NotificationDemo({ onError }: DemoSectionProps) {
+export function NotificationDemo({ onError }: DemoSectionProps) {
   const { t } = useTranslation();
+  const [permissionGranted, setPermissionGranted] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    isPermissionGranted().then(setPermissionGranted);
+  }, []);
 
   return (
     <section className="flex flex-col gap-2">
@@ -96,6 +135,7 @@ function NotificationDemo({ onError }: DemoSectionProps) {
               // モバイルでは要求フローがデスクトップと異なる（OS のダイアログに委譲される）
               granted = (await requestPermission()) === "granted";
             }
+            setPermissionGranted(granted);
             if (granted) {
               sendNotification({
                 title: t("demo.notification.title"),
@@ -111,6 +151,14 @@ function NotificationDemo({ onError }: DemoSectionProps) {
       >
         {t("demo.notification.send")}
       </Button>
+      <p className="text-xs text-muted-foreground">
+        {permissionGranted === null
+          ? t("demo.notification.permissionChecking")
+          : permissionGranted
+            ? t("demo.notification.permissionGranted")
+            : t("demo.notification.permissionNotGranted")}
+      </p>
+      <p className="text-xs text-muted-foreground">{t("demo.notification.devNote")}</p>
     </section>
   );
 }
@@ -134,6 +182,7 @@ function OpenLinkDemo({ onError }: DemoSectionProps) {
       >
         {t("demo.openLink.open")}
       </Button>
+      <p className="text-xs text-muted-foreground">{t("demo.openLink.notice")}</p>
     </section>
   );
 }
@@ -272,9 +321,8 @@ function NotesDemo({ onError }: DemoSectionProps) {
 // APP-08: 自動アップデート（デスクトップ専用）
 function UpdaterDemo({ onError }: DemoSectionProps) {
   const { t } = useTranslation();
-  const [checking, setChecking] = useState(false);
+  const [status, setStatus] = useState<UpdaterStatus>({ kind: "idle" });
   const [installing, setInstalling] = useState(false);
-  const [available, setAvailable] = useState<string | null>(null);
 
   return (
     <section className="flex flex-col gap-2">
@@ -282,22 +330,22 @@ function UpdaterDemo({ onError }: DemoSectionProps) {
       <div className="flex gap-2">
         <Button
           variant="outline"
-          disabled={checking}
+          disabled={status.kind === "checking"}
           onClick={async () => {
-            setChecking(true);
+            setStatus({ kind: "checking" });
             try {
               const info = await checkForUpdate();
-              setAvailable(info.available ? (info.version ?? null) : null);
+              setStatus(toUpdaterStatus(info));
             } catch (e) {
-              onError(String(e));
-            } finally {
-              setChecking(false);
+              const message = String(e);
+              setStatus({ kind: "failed", message });
+              onError(message);
             }
           }}
         >
           {t("demo.updater.check")}
         </Button>
-        {available && (
+        {status.kind === "available" && (
           <Button
             disabled={installing}
             onClick={async () => {
@@ -311,12 +359,20 @@ function UpdaterDemo({ onError }: DemoSectionProps) {
               }
             }}
           >
-            {t("demo.updater.install", { version: available })}
+            {t("demo.updater.install", { version: status.version })}
           </Button>
         )}
       </div>
-      {!checking && available === null && (
+      {status.kind === "checking" && (
+        <p className="text-xs text-muted-foreground">{t("demo.updater.checking")}</p>
+      )}
+      {status.kind === "upToDate" && (
         <p className="text-xs text-muted-foreground">{t("demo.updater.upToDate")}</p>
+      )}
+      {status.kind === "failed" && (
+        <p className="text-xs text-destructive">
+          {t("demo.updater.failed", { message: status.message })}
+        </p>
       )}
     </section>
   );
