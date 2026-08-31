@@ -59,7 +59,14 @@ function FileDemo({ onError }: DemoSectionProps) {
         variant="outline"
         onClick={async () => {
           try {
-            const path = await openDialog({ multiple: false });
+            const path = await openDialog({
+              multiple: false,
+              // #34 で画像プレビューが入るまではテキストしか扱えないため、
+              // 選択できる拡張子を絞る（#44）。
+              filters: [
+                { name: "Text", extensions: ["txt", "md", "json", "toml", "yaml", "csv", "log"] },
+              ],
+            });
             if (!path || Array.isArray(path)) return;
             // フロントから受け取ったパスをそのまま渡すが、これはダイアログが返した
             // 検証済みの値であり、ユーザー入力の任意文字列ではない点に注意
@@ -73,6 +80,7 @@ function FileDemo({ onError }: DemoSectionProps) {
       >
         {t("demo.file.open")}
       </Button>
+      <p className="text-xs text-muted-foreground">{t("demo.file.hint")}</p>
       {preview && (
         <pre className="whitespace-pre-wrap text-xs text-muted-foreground">{preview}</pre>
       )}

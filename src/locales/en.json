@@ -18,7 +18,11 @@
   },
   "demo": {
     "title": "Feature demo",
-    "file": { "title": "File picker / read", "open": "Open a file" },
+    "file": {
+      "title": "File picker / read",
+      "open": "Open a file",
+      "hint": "This demo reads the file as text. Binary files such as images are not supported (#34)."
+    },
     "notification": {
       "title": "Native notification",
       "send": "Send notification",
