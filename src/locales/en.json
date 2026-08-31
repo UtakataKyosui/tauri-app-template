@@ -25,7 +25,11 @@
       "body": "This is a test notification",
       "denied": "Notification permission was not granted"
     },
-    "openLink": { "title": "External link", "open": "Open in browser" },
+    "openLink": {
+      "title": "External link",
+      "open": "Open in browser",
+      "notice": "Opens in your OS default browser. If nothing happens, check your default browser's settings."
+    },
     "longTask": { "title": "Async task with progress", "start": "Start", "cancel": "Cancel" },
     "notes": {
       "title": "Notes (SQLite persistence)",

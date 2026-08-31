@@ -134,6 +134,7 @@ function OpenLinkDemo({ onError }: DemoSectionProps) {
       >
         {t("demo.openLink.open")}
       </Button>
+      <p className="text-xs text-muted-foreground">{t("demo.openLink.notice")}</p>
     </section>
   );
 }
